@@ -1,7 +1,8 @@
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 require('dotenv').config({ path: 'variables.env' });
 
@@ -20,12 +21,25 @@ mongoose
   .then(() => console.log('DB connected'))
   .catch(err => console.error(err));
 
+const getUser = async token => {
+  if (token) {
+    try {
+      return await jwt.verify(token, process.env.SECRET);
+    } catch (err) {
+      throw new AuthenticationError(
+        'Your session has ended. Please sign in again.'
+      );
+    }
+  }
+};
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: {
-    User,
-    Post
+  context: async ({ req }) => {
+    const token = req.headers['authorization'] || null;
+    const currentUser = await getUser(token);
+    return { User, Post, currentUser };
   }
 });
 

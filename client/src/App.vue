@@ -15,6 +15,12 @@
           </v-list-tile-action>
           <v-list-tile-content>{{item.title}}</v-list-tile-content>
         </v-list-tile>
+        <v-list-tile v-if="user" @click="handleSignoutUser">
+          <v-list-tile-action>
+            <v-icon>exit_to_app</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>Signout</v-list-tile-content>
+        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
     <v-toolbar fixed color="primary" dark>
@@ -32,6 +38,17 @@
           <v-icon class="hidden-sm-only" left>{{item.icon}}</v-icon>
           {{item.title}}
         </v-btn>
+        <v-btn flat to="/profile" v-if="user">
+          <v-icon class="hidden-sm-only" left>account_box</v-icon>
+          <v-badge right color="blue darken-2">
+            <!-- <span slot="badge">1</span> -->
+            Profile
+          </v-badge>
+        </v-btn>
+        <v-btn flat v-if="user" @click="handleSignoutUser">
+          <v-icon class="hidden-sm-only" left>exit_to_app</v-icon>
+          Signout
+        </v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <main>
@@ -45,16 +62,18 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 export default {
   name: 'App',
   data() {
     return {
-      sideNav: true
+      sideNav: false
     };
   },
   computed: {
+    ...mapGetters(['user']),
     horizontalNavItems() {
-      return [
+      let items = [
         {
           icon: 'chat',
           title: 'Posts',
@@ -71,9 +90,19 @@ export default {
           link: '/signup'
         }
       ];
+      if (this.user) {
+        items = [
+          {
+            icon: 'chat',
+            title: 'Posts',
+            link: '/posts'
+          }
+        ];
+      }
+      return items;
     },
     sideNavItems() {
-      return [
+      let items = [
         {
           icon: 'chat',
           title: 'Posts',
@@ -90,11 +119,39 @@ export default {
           link: '/signup'
         }
       ];
+      if (this.user) {
+        items = [
+          {
+            icon: 'chat',
+            title: 'Posts',
+            link: '/posts'
+          },
+          {
+            icon: 'stars',
+            title: 'Create Post',
+            link: '/posts/add'
+          },
+          {
+            icon: 'account_box',
+            title: 'Profile',
+            link: '/profile'
+          }
+        ];
+      }
+      return items;
     }
   },
   methods: {
     toggleSideNav() {
       this.sideNav = !this.sideNav;
+    },
+    async handleSignoutUser() {
+      try {
+        await this.$store.dispatch('signoutUser');
+        this.$router.push('/');
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
 };
