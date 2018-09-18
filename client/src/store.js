@@ -84,6 +84,9 @@ export default new Vuex.Store({
       });
       commit('setCurrentUser', data.getCurrentUser);
     },
+    setCurrentUser: ({ commit }, user) => {
+      commit('setCurrentUser', user);
+    },
     setToken: ({ commit }) => {
       const token = localStorage.getItem('token') || null;
       commit('setToken', token);
@@ -129,6 +132,7 @@ export default new Vuex.Store({
     loading: state => state.loading,
     token: state => state.token || '',
     user: state => state.currentUser,
-    authError: state => state.authError
+    authError: state => state.authError,
+    favorites: state => state.currentUser && state.currentUser.favorites
   }
 });

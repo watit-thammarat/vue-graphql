@@ -40,8 +40,8 @@
         </v-btn>
         <v-btn flat to="/profile" v-if="user">
           <v-icon class="hidden-sm-only" left>account_box</v-icon>
-          <v-badge right color="blue darken-2">
-            <!-- <span slot="badge">1</span> -->
+          <v-badge right color="blue darken-2" :class="{bouce: badgeAnimated}">
+            <span slot="badge" v-if="favorites && favorites.length">{{ favorites.length }}</span>
             Profile
           </v-badge>
         </v-btn>
@@ -59,7 +59,7 @@
         <v-snackbar v-model="authSnackbar" color="success" :timeout="5000" bottom left>
           <v-icon class="mr-3">check_circle</v-icon>
           <h3>Your are now signed in!</h3>
-          <v-btn dark flat @click="authSnackbar = false">Close</v-btn>
+          <v-btn dark flat @click="authSnackbar=false">Close</v-btn>
         </v-snackbar>
         <v-snackbar v-if="authError" v-model="authErrorSnackbar" color="info" :timeout="5000" bottom left>
           <v-icon class="mr-3">cancel</v-icon>
@@ -79,7 +79,8 @@ export default {
     return {
       sideNav: false,
       authSnackbar: false,
-      authErrorSnackbar: false
+      authErrorSnackbar: false,
+      badgeAnimated: false
     };
   },
   watch: {
@@ -92,10 +93,18 @@ export default {
       if (value) {
         this.authErrorSnackbar = true;
       }
+    },
+    favorites(value) {
+      if (value && value.length) {
+        this.badgeAnimated = true;
+        setTimeout(() => {
+          this.badgeAnimated = false;
+        }, 1000);
+      }
     }
   },
   computed: {
-    ...mapGetters(['user', 'authError']),
+    ...mapGetters(['user', 'authError', 'favorites']),
     horizontalNavItems() {
       let items = [
         {
@@ -196,5 +205,29 @@ export default {
 .fade-leave-active {
   opacity: 0;
   transform: translateY(-25px);
+}
+
+.bouce {
+  animation: bouce 1s both;
+}
+
+@keyframes bouce {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%,
+  43% {
+    transform: translate3d(0, -20px, 0);
+  }
+  70% {
+    transform: translate3d(0, -10px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
 }
 </style>
