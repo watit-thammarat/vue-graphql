@@ -58,6 +58,10 @@ module.exports = {
           .limit(5);
         return searchResult;
       }
+    },
+    getUserPosts: async (_, { userId }, { Post }) => {
+      const posts = await Post.find({ createdBy: userId });
+      return posts;
     }
   },
   Mutation: {
@@ -140,6 +144,22 @@ module.exports = {
         model: 'Post'
       });
       return { likes: post.likes, favorites: user.favorites };
+    },
+    updateUserPost: async (
+      _,
+      { postId, userId, title, imageUrl, description, categories },
+      { Post }
+    ) => {
+      const post = await Post.findOneAndUpdate(
+        { _id: postId, createdBy: userId },
+        { $set: { title, imageUrl, description, categories } },
+        { new: true }
+      );
+      return post;
+    },
+    deleteUserPost: async (_, { postId }, { Post }) => {
+      const post = await Post.findOneAndRemove({ _id: postId });
+      return post;
     }
   }
 };

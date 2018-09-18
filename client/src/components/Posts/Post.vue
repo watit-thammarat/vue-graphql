@@ -6,7 +6,7 @@
           <v-card-title>
             <h1>{{ getPost.title }}</h1>
             <v-btn @click="handleToggleLike" large icon v-if="user">
-              <v-icon large :color="checkIfPostLikes ? 'red' : 'grey'">favorite</v-icon>
+              <v-icon large :color="checkIfPostLikes() ? 'red' : 'grey'">favorite</v-icon>
             </v-btn>
             <h3 class="ml-3 font-weight-thin">{{ getPost.likes }} LIKES</h3>
             <v-spacer></v-spacer>

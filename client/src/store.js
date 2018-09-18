@@ -8,7 +8,10 @@ import {
   SIGNUP_USER,
   GET_CURRENT_USER,
   ADD_POST,
-  SEARCH_POSTS
+  SEARCH_POSTS,
+  GET_USER_POSTS,
+  UPDATE_USER_POST,
+  DELETE_USER_POST
 } from './queries';
 
 Vue.use(Vuex);
@@ -20,7 +23,8 @@ export default new Vuex.Store({
     token: null,
     currentUser: null,
     authError: null,
-    searchResults: null
+    searchResults: null,
+    userPosts: null
   },
   mutations: {
     setAuthError: (state, payload) => {
@@ -51,6 +55,9 @@ export default new Vuex.Store({
     },
     clearSearchResults: state => {
       state.searchResults = null;
+    },
+    setUserPosts: (state, payload) => {
+      state.userPosts = payload;
     }
   },
   actions: {
@@ -145,6 +152,34 @@ export default new Vuex.Store({
     },
     clearSearchResults({ commit }) {
       commit('clearSearchResults');
+    },
+    getUserPosts: async ({ commit, getters }) => {
+      const { data } = await apolloClient.query({
+        query: GET_USER_POSTS,
+        variables: {
+          userId: getters.user._id
+        }
+      });
+      commit('setUserPosts', data.getUserPosts);
+    },
+    updateUserPost: async ({ commit, getters }, payload) => {
+      const { data } = await apolloClient.mutate({
+        mutation: UPDATE_USER_POST,
+        variables: payload
+      });
+      const userPosts = [...getters.userPosts];
+      const index = userPosts.findIndex(p => p._id === payload.postId);
+      userPosts[index] = data.updateUserPost;
+      commit('setUserPosts', userPosts);
+    },
+    deleteUserPost: async ({ commit, getters }, payload) => {
+      const { data } = await apolloClient.mutate({
+        mutation: DELETE_USER_POST,
+        variables: payload
+      });
+      let userPosts = [...getters.userPosts];
+      userPosts = userPosts.filter(f => f._id !== payload.postId);
+      commit('setUserPosts', userPosts);
     }
   },
   getters: {
@@ -154,6 +189,7 @@ export default new Vuex.Store({
     user: state => state.currentUser,
     authError: state => state.authError,
     favorites: state => state.currentUser && state.currentUser.favorites,
-    searchResults: state => state.searchResults
+    searchResults: state => state.searchResults,
+    userPosts: state => state.userPosts
   }
 });
