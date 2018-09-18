@@ -24,6 +24,20 @@ module.exports = {
         model: 'Post'
       });
       return user;
+    },
+    infiniteScrollPosts: async (_, { pageNum, pageSize }, { Post }) => {
+      let skips = pageNum === 1 ? 0 : pageSize * (pageNum - 1);
+      const posts = await Post.find({})
+        .sort({ createdDate: 'desc' })
+        .populate({
+          path: 'createdBy',
+          model: 'User'
+        })
+        .skip(skips)
+        .limit(pageSize);
+      const totalDocs = await Post.countDucuments;
+      const hasMore = totalDocs > pageSize * pageNum;
+      return { posts, hasMore };
     }
   },
   Mutation: {
