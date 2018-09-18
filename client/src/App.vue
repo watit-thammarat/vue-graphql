@@ -31,7 +31,22 @@
         </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-text-field flex prepend-icon="search" placeholder="Search posts" color="accent" single-line hide-details></v-text-field>
+      <v-text-field v-model="searchTerm" @input="handleSearchPosts" flex prepend-icon="search" placeholder="Search posts" color="accent" single-line hide-details></v-text-field>
+
+      <v-card dark v-if="searchResults && searchResults.length > 0" id="search__card">
+        <v-list>
+          <v-list-tile @click="goToSearchResult(result._id)" v-for="result in searchResults" :key="result._id">
+            <v-list-tile-title>
+              {{ result.title }}
+              <span class="font-weight-thin">{{ formatDescription(result.description) }}</span>
+            </v-list-tile-title>
+            <v-list-tile-action v-if="checkIfUserFavorite(result._id)">
+              <v-icon>favorite</v-icon>
+            </v-list-tile-action>
+          </v-list-tile>
+        </v-list>
+      </v-card>
+
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-xs-only">
         <v-btn flat v-for="item in horizontalNavItems" :key="item.title" :to="item.link">
@@ -80,7 +95,9 @@ export default {
       sideNav: false,
       authSnackbar: false,
       authErrorSnackbar: false,
-      badgeAnimated: false
+      badgeAnimated: false,
+      searchTerm: '',
+      loading: false
     };
   },
   watch: {
@@ -104,7 +121,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['user', 'authError', 'favorites']),
+    ...mapGetters(['user', 'authError', 'favorites', 'searchResults']),
     horizontalNavItems() {
       let items = [
         {
@@ -185,6 +202,28 @@ export default {
       } catch (err) {
         console.error(err);
       }
+    },
+    async handleSearchPosts() {
+      try {
+        this.loading = true;
+        await this.$store.dispatch('searchPosts', {
+          searchTerm: this.searchTerm
+        });
+      } catch (err) {
+        console.log(err);
+        this.loading = false;
+      }
+    },
+    goToSearchResult(id) {
+      this.searchTerm = '';
+      this.$router.push(`/posts/${id}`);
+      this.$store.dispatch('clearSearchResults');
+    },
+    formatDescription(desc) {
+      return desc.length > 20 ? `${desc.slice(0, 20)}...` : desc;
+    },
+    checkIfUserFavorite(id) {
+      return this.favorites && this.favorites.some(f => f._id === id);
     }
   }
 };
@@ -229,5 +268,13 @@ export default {
   90% {
     transform: translate3d(0, -4px, 0);
   }
+}
+
+#search__card {
+  position: absolute;
+  width: 100vw;
+  z-index: 8;
+  top: 100%;
+  left: 0%;
 }
 </style>

@@ -47,6 +47,17 @@ module.exports = {
         })
         .populate({ path: 'createdBy', model: 'User' });
       return post;
+    },
+    searchPosts: async (_, { searchTerm }, { Post }) => {
+      if (searchTerm) {
+        const searchResult = await Post.find(
+          { $text: { $search: searchTerm } },
+          { score: { $meta: 'textScore' } }
+        )
+          .sort({ score: { $meta: 'textScore' }, likes: 'desc' })
+          .limit(5);
+        return searchResult;
+      }
     }
   },
   Mutation: {
