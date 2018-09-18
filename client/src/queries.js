@@ -95,3 +95,51 @@ export const INFINITE_SCROLL_POSTS = gql`
     }
   }
 `;
+
+export const GET_POST = gql`
+  query($id: ID!) {
+    getPost(id: $id) {
+      _id
+      title
+      imageUrl
+      categories
+      description
+      createdDate
+      likes
+      messages {
+        _id
+        messageBody
+        messageDate
+        messageUser {
+          _id
+          username
+          avatar
+        }
+      }
+      createdBy {
+        _id
+        username
+        avatar
+      }
+    }
+  }
+`;
+
+export const ADD_POST_MESSAGE = gql`
+  mutation($messageBody: String!, $userId: ID!, $postId: ID!) {
+    addPostMessage(
+      messageBody: $messageBody
+      userId: $userId
+      postId: $postId
+    ) {
+      _id
+      messageBody
+      messageDate
+      messageUser {
+        _id
+        username
+        avatar
+      }
+    }
+  }
+`;

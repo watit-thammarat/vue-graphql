@@ -3,7 +3,7 @@
     <v-layout row wrap v-if="infiniteScrollPosts">
       <v-flex xs12 sm6 v-for="post in infiniteScrollPosts.posts" :key="post._id">
         <v-card hover>
-          <v-img :src="post.imageUrl" height="30vh" lazy></v-img>
+          <v-img @click.native="goToPost(post._id)" :src="post.imageUrl" height="30vh" lazy></v-img>
           <v-card-actions>
             <v-card-title primary>
               <div>
@@ -52,7 +52,6 @@
 import { INFINITE_SCROLL_POSTS } from '../../queries.js';
 
 const pageSize = 1;
-
 export default {
   name: 'Posts',
   data() {
@@ -72,6 +71,9 @@ export default {
     }
   },
   methods: {
+    goToPost(id) {
+      this.$router.push(`/posts/${id}`);
+    },
     showMorePosts() {
       this.pageNum += 1;
       this.$apollo.queries.infiniteScrollPosts.fetchMore({

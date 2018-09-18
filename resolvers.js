@@ -35,9 +35,18 @@ module.exports = {
         })
         .skip(skips)
         .limit(pageSize);
-      const totalDocs = await Post.countDucuments;
+      const totalDocs = await Post.count({});
       const hasMore = totalDocs > pageSize * pageNum;
       return { posts, hasMore };
+    },
+    getPost: async (_, { id }, { Post }) => {
+      const post = await Post.findOne({ _id: id })
+        .populate({
+          path: 'messages.messageUser',
+          model: 'User'
+        })
+        .populate({ path: 'createdBy', model: 'User' });
+      return post;
     }
   },
   Mutation: {
@@ -73,6 +82,21 @@ module.exports = {
         throw new Error('Invalid password');
       }
       return { token: createToken(user, process.env.SECRET, '1hr') };
+    },
+    addPostMessage: async (_, { messageBody, userId, postId }, { Post }) => {
+      const message = {
+        messageBody,
+        messageUser: userId
+      };
+      const post = await Post.findOneAndUpdate(
+        { _id: postId },
+        { $push: { messages: { $each: [message], $position: 0 } } },
+        { new: true }
+      ).populate({
+        path: 'messages.messageUser',
+        model: 'User'
+      });
+      return post.messages[0];
     }
   }
 };
