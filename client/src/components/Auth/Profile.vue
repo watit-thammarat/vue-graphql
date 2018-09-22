@@ -10,7 +10,7 @@
             <v-card-title primary-title>
               <div>
                 <div class="headline">{{ user.username }}</div>
-                <div>Joined {{ user.joinDate }}</div>
+                <div>Joined {{ formatJoinDate(user.joinDate) }}</div>
                 <div class="hidden-xs-only font-weight-regular">{{ user.favorites.length }} Fovarites</div>
                 <div class="hidden-xs-only font-weight-regular">{{ userPosts && userPosts.length }} Posts Added</div>
               </div>
@@ -36,7 +36,7 @@
       <v-layout row wrap>
         <v-flex xs12 sm6 v-for="favorite in favorites" :key="favorite._id">
           <v-card class="mt-3 ml-1 mr-2" hover>
-            <v-img height="30vh" :src="favorite.imageUrl"></v-img>
+            <v-img @click="goToPost(favorite)" height="30vh" :src="favorite.imageUrl"></v-img>
             <v-card-text>{{ favorite.title }}</v-card-text>
           </v-card>
         </v-flex>
@@ -63,7 +63,7 @@
             <v-btn color="error" floating fab small dark @click="handleDeleteUserPost(post)">
               <v-icon>delete</v-icon>
             </v-btn>
-            <v-img height="30vh" :src="post.imageUrl"></v-img>
+            <v-img @click="goToPost(post)" height="30vh" :src="post.imageUrl"></v-img>
             <v-card-text>{{ post.title }}</v-card-text>
           </v-card>
         </v-flex>
@@ -120,6 +120,7 @@
 </template>
 
 <script>
+import moment from 'moment';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -157,6 +158,12 @@ export default {
     ...mapGetters(['user', 'favorites', 'userPosts'])
   },
   methods: {
+    goToPost({ _id }) {
+      this.$router.push(`/posts/${_id}`);
+    },
+    formatJoinDate(date) {
+      return moment(new Date(date)).format('ll');
+    },
     async handleGetUserPosts() {
       try {
         this.loading = true;
@@ -181,6 +188,7 @@ export default {
           categories: this.categories,
           description: this.description
         });
+        this.$refs.form.reset();
         this.loading = false;
         this.editPostDialog = false;
       } catch (err) {

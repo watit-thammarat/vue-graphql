@@ -25,7 +25,7 @@
                 <v-list-tile-content>
                   <v-list-tile-title class="text-primary">{{ post.createdBy.username }}
                   </v-list-tile-title>
-                  <v-list-tile-sub-title class="font-weight-thin">Added {{ post.createdDate }}</v-list-tile-sub-title>
+                  <v-list-tile-sub-title class="font-weight-thin">Added {{ formatCreatedDate(post.createdDate) }}</v-list-tile-sub-title>
                 </v-list-tile-content>
                 <v-list-tile-action>
                   <v-btn icon ripple>
@@ -38,7 +38,7 @@
         </v-card>
       </v-flex>
     </v-layout>
-    <v-layout column v-if="showMoreEnabled">
+    <v-layout column v-if="hasMoreEnabled">
       <v-flex xs12>
         <v-layout justify-center row>
           <v-btn color="info" @click="showMorePosts">fetch more</v-btn>
@@ -49,6 +49,8 @@
 </template>
 
 <script>
+import * as moment from 'moment';
+
 import { INFINITE_SCROLL_POSTS } from '../../queries.js';
 
 const pageSize = 1;
@@ -57,7 +59,6 @@ export default {
   data() {
     return {
       pageNum: 1,
-      showMoreEnabled: true,
       showPostCreator: true
     };
   },
@@ -70,7 +71,15 @@ export default {
       }
     }
   },
+  computed: {
+    hasMoreEnabled() {
+      return this.infiniteScrollPosts && this.infiniteScrollPosts.hasMore;
+    }
+  },
   methods: {
+    formatCreatedDate(date) {
+      return moment(new Date(date)).format('MMM DD, YYYY');
+    },
     goToPost(id) {
       this.$router.push(`/posts/${id}`);
     },
@@ -84,7 +93,6 @@ export default {
         updateQuery: (cache, { fetchMoreResult }) => {
           const newPosts = fetchMoreResult.infiniteScrollPosts.posts;
           const hasMore = fetchMoreResult.infiniteScrollPosts.hasMore;
-          this.showMoreEnabled = hasMore;
           return {
             infiniteScrollPosts: {
               __typename: cache.infiniteScrollPosts.__typename,
